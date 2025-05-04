@@ -1,0 +1,52 @@
+# Java
+*.class
+*.log
+*.war
+*.jar
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# VS Code
+.vscode/
+
+# Mac OS
+.DS_Store
+
+# Linux
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+logs/
+
+# Spring Boot dev tools
+.spring-boot-devtools.properties
+
+# Test reports
+test-results/
+surefire-reports/
+
+# Others
+.env
+node_modules/
