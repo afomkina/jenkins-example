@@ -88,11 +88,12 @@ pipeline {
                     }
 
                     catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                        sh '''
+                        sh """
                         curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
-                            -d chat_id=${TELEGRAM_CHAT_ID} \\
-                            -d text="Сборка ${JOB_NAME} #${BUILD_NUMBER}: ${BUILD_STATUS:-$BUILD_RESULT}\\n${BUILD_URL}"
-                        '''
+                            --data-urlencode chat_id=${TELEGRAM_CHAT_ID} \\
+                            --data-urlencode text="*Сборка:* ${JOB_NAME} #${BUILD_NUMBER}\\n*Статус:* ${BUILD_STATUS:-$BUILD_RESULT}\\n*Ссылка:* ${BUILD_URL}" \\
+                            -d parse_mode=Markdown
+                        """
                     }
                 }
             }
