@@ -6,7 +6,8 @@ pipeline {
         REPORT_DIR = 'build/test-results/test'
         JACOCO_HTML = 'build/reports/jacoco/test/html'
         EMAIL_RECIPIENTS = 'team@example.com'
-        SLACK_CHANNEL = '#build-notifications'
+        TELEGRAM_CHAT_ID = credentials('TELEGRAM_CHAT_ID')
+        TELEGRAM_TOKEN = credentials('TELEGRAM_TOKEN')
     }
 
     options {
@@ -36,7 +37,9 @@ pipeline {
 
         stage('Запуск тестов') {
             steps {
-                sh './gradlew test'
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh './gradlew test'
+                }
             }
             post {
                 always {
@@ -57,35 +60,40 @@ pipeline {
 
         stage('Отчёт в HTML') {
             steps {
-                echo "Публикация HTML-отчёта"
-                publishHTML(target: [
-                    reportDir: "${JACOCO_HTML}",
-                    reportFiles: 'index.html',
-                    reportName: 'Jacoco Code Coverage',
-                    keepAll: true,
-                    alwaysLinkToLastBuild: true,
-                    allowMissing: true
-                ])
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    publishHTML(target: [
+                        reportDir: "${JACOCO_HTML}",
+                        reportFiles: 'index.html',
+                        reportName: 'Jacoco Code Coverage',
+                        keepAll: true,
+                        alwaysLinkToLastBuild: true,
+                        allowMissing: true
+                    ])
+                }
             }
         }
 
         stage('Уведомление') {
             steps {
                 script {
-                    emailext(
-                        subject: "Сборка ${env.JOB_NAME} #${env.BUILD_NUMBER}: ${currentBuild.currentResult}",
-                        body: """<p>Статус: ${currentBuild.currentResult}</p>
-                                 <p>Ссылка на билд: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>""",
-                        recipientProviders: [[$class: 'DevelopersRecipientProvider']],
-                        to: "${EMAIL_RECIPIENTS}",
-                        mimeType: 'text/html'
-                    )
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        emailext(
+                            subject: "Сборка ${env.JOB_NAME} #${env.BUILD_NUMBER}: ${currentBuild.currentResult}",
+                            body: """<p>Статус: ${currentBuild.currentResult}</p>
+                                     <p>Ссылка на билд: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>""",
+                            recipientProviders: [[$class: 'DevelopersRecipientProvider']],
+                            to: "${EMAIL_RECIPIENTS}",
+                            mimeType: 'text/html'
+                        )
+                    }
 
-                    slackSend(
-                        channel: "${SLACK_CHANNEL}",
-                        color: currentBuild.currentResult == 'SUCCESS' ? 'good' : 'danger',
-                        message: "Сборка ${env.JOB_NAME} #${env.BUILD_NUMBER}: ${currentBuild.currentResult}\n${env.BUILD_URL}"
-                    )
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        sh '''
+                        curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
+                            -d chat_id=${TELEGRAM_CHAT_ID} \\
+                            -d text="Сборка ${JOB_NAME} #${BUILD_NUMBER}: ${BUILD_STATUS:-$BUILD_RESULT}\\n${BUILD_URL}"
+                        '''
+                    }
                 }
             }
         }
