@@ -7,6 +7,7 @@ pipeline {
         JACOCO_HTML = 'build/reports/jacoco/test/html'
         EMAIL_RECIPIENTS = 'afomkina96@gmail.com'
         EMAIL_FROM = 'styxa2011@yandex.ru'
+        EMAIL_SUBJECT = 'Результат сборки Jenkins'
         TELEGRAM_CHAT_ID = credentials('TELEGRAM_CHAT_ID')
         TELEGRAM_TOKEN = credentials('TELEGRAM_TOKEN')
     }
@@ -94,7 +95,7 @@ pipeline {
                             sh '''
                                 curl -s -X POST https://api.telegram.org/bot$TOKEN/sendMessage \
                                     --data-urlencode chat_id=$CHAT_ID \
-                                    --data-urlencode text="<b>Сборка:</b> ${JOB_NAME}/${BRANCH_NAME} #${BUILD_NUMBER}<br/><b>Статус:</b> ${BUILD_STATUS}<br/><b>Ссылка:</b> <a href='${BUILD_URL}'>Открыть в Jenkins</a>" \
+                                    --data-urlencode text="Сборка: ${JOB_NAME}/${BRANCH_NAME} #${BUILD_NUMBER}\nСтатус: ${BUILD_STATUS}\nСсылка: ${BUILD_URL}" \
                                     -d parse_mode=HTML
                             '''
                         }
