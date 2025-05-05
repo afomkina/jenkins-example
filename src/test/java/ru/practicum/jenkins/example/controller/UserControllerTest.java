@@ -25,20 +25,19 @@ class UserControllerTest {
 
     @Test
     void createUser_shouldReturnCreatedUser() throws Exception {
-        UserDto userDto = new UserDto(null, "Анна", "anna@yandex.ru");
+        UserDto userDto = new UserDto(null, "Анна");
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", notNullValue()))
-                .andExpect(jsonPath("$.name").value("Анна"))
-                .andExpect(jsonPath("$.email").value("anna@yandex.ru"));
+                .andExpect(jsonPath("$.name").value("Анна"));
     }
 
     @Test
     void getUser_shouldReturnUserIfExists() throws Exception {
-        UserDto userDto = new UserDto(null, "Олег", "oleg@yandex.ru");
+        UserDto userDto = new UserDto(null, "Олег");
 
         String response = mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -50,8 +49,7 @@ class UserControllerTest {
 
         mockMvc.perform(get("/users/" + created.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Олег"))
-                .andExpect(jsonPath("$.email").value("oleg@yandex.ru"));
+                .andExpect(jsonPath("$.name").value("Олег"));
     }
 
     @Test
