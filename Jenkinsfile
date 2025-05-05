@@ -76,7 +76,7 @@ pipeline {
         stage('Уведомление по Email') {
             steps {
                 script {
-                    try {
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
                         emailext(
                             subject: "Сборка ${env.JOB_NAME} #${env.BUILD_NUMBER}: ${currentBuild.currentResult}",
                             body: """<p>Статус: ${currentBuild.currentResult}</p>
@@ -85,30 +85,20 @@ pipeline {
                             to: "${EMAIL_RECIPIENTS}",
                             mimeType: 'text/html'
                         )
-                    } catch (err) {
-                        echo "Ошибка отправки email: ${err.getMessage()}"
-                        currentBuild.result = 'UNSTABLE'
                     }
                 }
             }
         }
 
-        stage('Уведомление в Telegram') {
+        stage('Уведомление в Telegram'){
             steps {
-                script {
-                    try {
-                        sh(
-                            label: 'Отправка уведомления в Telegram',
-                            script: """
-                                curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
-                                    --data-urlencode chat_id=${TELEGRAM_CHAT_ID} \\
-                                    --data-urlencode text="*Сборка:* ${JOB_NAME} #${BUILD_NUMBER}\\n*Статус:* ${BUILD_STATUS:-$BUILD_RESULT}\\n*Ссылка:* ${BUILD_URL}" \\
-                                    -d parse_mode=Markdown
-                            """
-                        )
-                    } catch (err) {
-                        echo "Ошибка отправки в Telegram: ${err.getMessage()}"
-                        currentBuild.result = 'UNSTABLE'
+                script{
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                        sh '''
+                        curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
+                            -d chat_id=${TELEGRAM_CHAT_ID} \\
+                            -d text="Сборка ${JOB_NAME} #${BUILD_NUMBER}: ${BUILD_STATUS:-$BUILD_RESULT}\\n${BUILD_URL}"
+                        '''
                     }
                 }
             }
