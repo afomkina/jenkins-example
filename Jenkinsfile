@@ -73,7 +73,7 @@ pipeline {
             }
         }
 
-        stage('Уведомление') {
+        stage('Уведомление по Email') {
             steps {
                 script {
                     try {
@@ -89,7 +89,13 @@ pipeline {
                         echo "Ошибка отправки email: ${err.getMessage()}"
                         currentBuild.result = 'UNSTABLE'
                     }
+                }
+            }
+        }
 
+        stage('Уведомление в Telegram') {
+            steps {
+                script {
                     try {
                         sh(
                             label: 'Отправка уведомления в Telegram',
