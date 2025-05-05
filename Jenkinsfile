@@ -73,10 +73,10 @@ pipeline {
             }
         }
 
-        stage('Уведомление по Email') {
+        stage('Уведомления') {
             steps {
                 script {
-                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                         emailext(
                             subject: "Сборка ${env.JOB_NAME} #${env.BUILD_NUMBER}: ${currentBuild.currentResult}",
                             body: """<p>Статус: ${currentBuild.currentResult}</p>
@@ -86,19 +86,14 @@ pipeline {
                             mimeType: 'text/html'
                         )
                     }
-                }
-            }
-        }
 
-        stage('Уведомление в Telegram'){
-            steps {
-                script{
-                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                        sh '''
+                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                        sh """
                         curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
-                            -d chat_id=${TELEGRAM_CHAT_ID} \\
-                            -d text="Сборка ${JOB_NAME} #${BUILD_NUMBER}: ${BUILD_STATUS:-$BUILD_RESULT}\\n${BUILD_URL}"
-                        '''
+                            --data-urlencode chat_id=${TELEGRAM_CHAT_ID} \\
+                            --data-urlencode text="*Сборка:* ${JOB_NAME} #${BUILD_NUMBER}\\n*Статус:* ${BUILD_STATUS:-$BUILD_RESULT}\\n*Ссылка:* ${BUILD_URL}" \\
+                            -d parse_mode=Markdown
+                        """
                     }
                 }
             }
