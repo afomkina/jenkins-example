@@ -91,7 +91,7 @@ pipeline {
                         sh """
                             curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
                                 --data-urlencode chat_id=${TELEGRAM_CHAT_ID} \\
-                                --data-urlencode text="<b>Сборка:</b> ${env.JOB_NAME} #${env.BUILD_NUMBER}%0A<b>Статус:</b> ${currentBuild.currentResult}%0A<b>Ссылка:</b> <a href='${env.BUILD_URL}'>Открыть в Jenkins</a>" \\
+                                --data-urlencode text="<b>Сборка:</b> ${env.JOB_NAME}/${env.BRANCH_NAME} #${env.BUILD_NUMBER}<br><b>Статус:</b> ${currentBuild.currentResult}<br><b>Ссылка:</b> <a href='${env.BUILD_URL}'>Открыть в Jenkins</a>" \\
                                 -d parse_mode=HTML
                         """
                     }
