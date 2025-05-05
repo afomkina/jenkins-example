@@ -76,7 +76,7 @@ pipeline {
         stage('Уведомление') {
             steps {
                 script {
-                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
                         emailext(
                             subject: "Сборка ${env.JOB_NAME} #${env.BUILD_NUMBER}: ${currentBuild.currentResult}",
                             body: """<p>Статус: ${currentBuild.currentResult}</p>
@@ -87,13 +87,16 @@ pipeline {
                         )
                     }
 
-                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                        sh """
-                        curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
-                            --data-urlencode chat_id=${TELEGRAM_CHAT_ID} \\
-                            --data-urlencode text="*Сборка:* ${JOB_NAME} #${BUILD_NUMBER}\\n*Статус:* ${BUILD_STATUS:-$BUILD_RESULT}\\n*Ссылка:* ${BUILD_URL}" \\
-                            -d parse_mode=Markdown
-                        """
+                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                        sh(
+                            label: 'Отправка уведомления в Telegram',
+                            script: """
+                                curl -s -X POST https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage \\
+                                    --data-urlencode chat_id=${TELEGRAM_CHAT_ID} \\
+                                    --data-urlencode text="*Сборка:* ${JOB_NAME} #${BUILD_NUMBER}\\n*Статус:* ${BUILD_STATUS:-$BUILD_RESULT}\\n*Ссылка:* ${BUILD_URL}" \\
+                                    -d parse_mode=Markdown
+                            """
+                        )
                     }
                 }
             }
