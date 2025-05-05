@@ -76,7 +76,7 @@ pipeline {
         stage('Уведомление') {
             steps {
                 script {
-                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    try {
                         emailext(
                             subject: "Сборка ${env.JOB_NAME} #${env.BUILD_NUMBER}: ${currentBuild.currentResult}",
                             body: """<p>Статус: ${currentBuild.currentResult}</p>
@@ -85,9 +85,12 @@ pipeline {
                             to: "${EMAIL_RECIPIENTS}",
                             mimeType: 'text/html'
                         )
+                    } catch (err) {
+                        echo "Ошибка отправки email: ${err.getMessage()}"
+                        currentBuild.result = 'UNSTABLE'
                     }
 
-                    catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    try {
                         sh(
                             label: 'Отправка уведомления в Telegram',
                             script: """
@@ -97,6 +100,9 @@ pipeline {
                                     -d parse_mode=Markdown
                             """
                         )
+                    } catch (err) {
+                        echo "Ошибка отправки в Telegram: ${err.getMessage()}"
+                        currentBuild.result = 'UNSTABLE'
                     }
                 }
             }
