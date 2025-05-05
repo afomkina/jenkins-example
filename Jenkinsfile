@@ -6,6 +6,7 @@ pipeline {
         REPORT_DIR = 'build/test-results/test'
         JACOCO_HTML = 'build/reports/jacoco/test/html'
         EMAIL_RECIPIENTS = 'team@example.com'
+        EMAIL_FROM = 'admin@yandex.ru'
         TELEGRAM_CHAT_ID = credentials('TELEGRAM_CHAT_ID')
         TELEGRAM_TOKEN = credentials('TELEGRAM_TOKEN')
     }
@@ -78,11 +79,12 @@ pipeline {
                 script {
                     catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                         emailext(
-                            subject: "Сборка ${env.JOB_NAME} #${env.BUILD_NUMBER}: ${currentBuild.currentResult}",
+                            subject: "${EMAIL_SUBJECT}",
                             body: """<p>Статус: ${currentBuild.currentResult}</p>
                                      <p>Ссылка на билд: <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>""",
                             recipientProviders: [[$class: 'DevelopersRecipientProvider']],
                             to: "${EMAIL_RECIPIENTS}",
+                            from: "${EMAIL_FROM}",
                             mimeType: 'text/html'
                         )
                     }
