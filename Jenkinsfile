@@ -5,8 +5,8 @@ pipeline {
         PROJECT_NAME = 'jenkins-example'
         REPORT_DIR = 'build/test-results/test'
         JACOCO_HTML = 'build/reports/jacoco/test/html'
-        EMAIL_RECIPIENTS = 'afomkina96@gmail.com'
-        EMAIL_FROM = 'styxa2011@yandex.ru'
+        EMAIL_RECIPIENTS = 'team_email@yandex.ru' // нужно заменить на валидный email
+        EMAIL_FROM = 'your_email@yandex.ru' // нужно заменить на валидный email
         EMAIL_SUBJECT = 'Результат сборки Jenkins'
         TELEGRAM_CHAT_ID = credentials('TELEGRAM_CHAT_ID')
         TELEGRAM_TOKEN = credentials('TELEGRAM_TOKEN')
